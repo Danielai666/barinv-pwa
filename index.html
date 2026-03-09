@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#ff8c00">
+<title>BARINV</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Barlow:wght@300;400;500;600;700&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #070707;
+  --s1: #0e0e0e;
+  --s2: #151515;
+  --s3: #1c1c1c;
+  --border: #222;
+  --border2: #2a2a2a;
+  --a: #ff8c00;       /* amber — primary accent */
+  --a2: #00d4aa;      /* teal — positive/return */
+  --a3: #ff3b3b;      /* red — danger */
+  --a4: #6c63ff;      /* purple — pending */
+  --text: #e8e8e8;
+  --muted: #555;
+  --dim: #333;
+  --r: 0px;           /* border radius — 0 for industrial look */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+/* ── OFFLINE BANNER ── */
+#offline-banner {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: var(--a);
+  color: #000;
+  text-align: center;
+  padding: 6px;
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 1000;
+  font-weight: 500;
+}
+#offline-banner.show { display: block; }
+
+/* ── SETUP WIZARD ── */
+#setup-wizard {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.wizard-box {
+  width: 100%;
+  max-width: 460px;
+}
+
+.wizard-logo {
+  font-family: 'Russo One', sans-serif;
+  font-size: 42px;
+  letter-spacing: 0.04em;
+  color: var(--a);
+  margin-bottom: 4px;
+}
+
+.wizard-tagline {
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+
+.wizard-step {
+  margin-bottom: 32px;
+}
+
+.step-num {
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--a);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.step-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.step-desc a {
+  color: var(--a);
+  text-decoration: none;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Fira Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--a);
+}
+
+.field input::placeholder { color: var(--muted); }
+.field select option { background: var(--s2); color: var(--text); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Fira Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: all 0.12s;
+  white-space: nowrap;
+  -webkit-appearance: none;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-a    { background: var(--a);  color: #000; }
+.btn-a:hover { background: #e07c00; }
+.btn-a2   { background: var(--a2); color: #000; }
+.btn-a2:hover { background: #00bca0; }
+.btn-danger { background: var(--a3); color: #fff; }
+.btn-danger:hover { background: #e03030; }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text); }
+.btn-ghost:hover { border-color: var(--a); color: var(--a); }
+.btn-dim  { background: var(--s3); color: var(--muted); border: 1px solid var(--border); }
+.btn-dim:hover { color: var(--text); }
+.btn-full { width: 100%; }
+.btn-sm   { padding: 7px 14px; font-size: 10px; }
+.btn-xs   { padding: 4px 10px; font-size: 9px; }
+.btn-lg   { padding: 16px 28px; font-size: 14px; }
+
+.btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+#login-screen::before {
+  content: 'BARINV';
+  position: absolute;
+  font-family: 'Russo One', sans-serif;
+  font-size: 30vw;
+  color: rgba(255,140,0,0.03);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-wrap {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-logo {
+  font-family: 'Russo One', sans-serif;
+  font-size: 36px;
+  letter-spacing: 0.04em;
+  color: var(--a);
+  margin-bottom: 2px;
+}
+
+.login-subtitle {
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 36px;
+}
+
+.login-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.login-tab.active { color: var(--a); border-bottom-color: var(--a); }
+
+.login-panel { display: none; }
+.login-panel.active { display: block; }
+
+.alert {
+  padding: 11px 14px;
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  margin-top: 14px;
+  display: none;
+  line-height: 1.5;
+}
+
+.alert-err  { background: rgba(255,59,59,0.1);  border: 1px solid rgba(255,59,59,0.25);  color: var(--a3); }
+.alert-ok   { background: rgba(0,212,170,0.1);  border: 1px solid rgba(0,212,170,0.25);  color: var(--a2); }
+.alert-info { background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.2);   color: var(--a);  }
+.alert.show { display: block; }
+
+/* ── APP SHELL ── */
+#app { display: none; min-height: 100vh; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 12px;
+}
+
+.topbar-logo {
+  font-family: 'Russo One', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: var(--a);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topbar-nav::-webkit-scrollbar { display: none; }
+
+.nav-btn {
+  padding: 0 16px;
+  height: 52px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.12s;
+  white-space: nowrap;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.nav-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--a);
+  transform: scaleX(0);
+  transition: transform 0.15s;
+}
+
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--a); }
+.nav-btn.active::after { transform: scaleX(1); }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: var(--s3);
+  border: 1px solid var(--border);
+}
+
+.user-pill-name {
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+.role-chip {
+  font-family: 'Fira Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  font-weight: 500;
+}
+
+.role-admin  { background: rgba(255,140,0,0.15); color: var(--a); }
+.role-barback{ background: rgba(0,212,170,0.15); color: var(--a2); }
+.role-night  { background: rgba(108,99,255,0.15); color: #9d97ff; }
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1;
+  padding: 24px 16px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.page { display: none; animation: fadeIn 0.2s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ── PAGE HEADER ── */
+.ph {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ph-left {}
+
+.ph-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.ph-sub {
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+.ph-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── STAT CARDS ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  padding: 18px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+
+.sc-a::before  { background: var(--a);  }
+.sc-a2::before { background: var(--a2); }
+.sc-a3::before { background: var(--a3); }
+.sc-a4::before { background: var(--a4); }
+.sc-dim::before{ background: var(--dim);}
+
+.stat-val {
+  font-family: 'Russo One', sans-serif;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.stat-lbl {
+  font-family: 'Fira Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* ── REALTIME PULSE ── */
+.rt-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  background: var(--a2);
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ── TABLES ── */
+.tbl-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+thead th {
+  font-family: 'Fira Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 9px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--s1);
+}
+
+td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: 'Fira Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.b-pending  { background: rgba(108,99,255,0.15); color: #9d97ff; }
+.b-approved { background: rgba(0,212,170,0.15);  color: var(--a2); }
+.b-rejected { background: rgba(255,59,59,0.15);  color: var(--a3); }
+.b-active   { background: rgba(0,212,170,0.12);  color: var(--a2); }
+.b-inactive { background: rgba(85,85,85,0.2);    color: var(--muted); }
+
+.action-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  font-family: 'Fira Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.act-REQUEST    { background: rgba(108,99,255,0.15); color: #9d97ff; }
+.act-DELIVERED  { background: rgba(0,212,170,0.15);  color: var(--a2); }
+.act-RETURNED   { background: rgba(255,140,0,0.15);  color: var(--a); }
+.act-ADJUSTMENT { background: rgba(255,59,59,0.15);  color: var(--a3); }
+
+/* ── PANEL / CARD ── */
+.panel {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.panel-title {
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.panel-body { padding: 16px; }
+
+/* ── FORM GRID ── */
+.fg { display: grid; gap: 12px; margin-bottom: 12px; }
+.fg-2 { grid-template-columns: 1fr 1fr; }
+.fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+.fg-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+@media (max-width: 600px) {
+  .fg-2,.fg-3,.fg-4 { grid-template-columns: 1fr; }
+  .main { padding: 16px 12px; }
+  .topbar { padding: 0 12px; }
+  .stat-val { font-size: 28px; }
+}
+
+/* ── INLINE FORM ROW ── */
+.form-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.form-row .field { flex: 1; min-width: 100px; margin-bottom: 0; }
+
+/* ── BARBACK SUBMIT ── */
+.submit-wrap {
+  max-width: 520px;
+}
+
+.scanner-area {
+  background: var(--s2);
+  border: 2px dashed var(--border2);
+  padding: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.scanner-area.scanning {
+  border-color: var(--a);
+  border-style: solid;
+}
+
+#scanner-video {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: none;
+  background: #000;
+}
+
+.scanner-hint {
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  padding: 12px 0;
+}
+
+.sku-found {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(0,212,170,0.08);
+  border: 1px solid rgba(0,212,170,0.2);
+  font-family: 'Fira Mono', monospace;
+  font-size: 12px;
+  color: var(--a2);
+  display: none;
+}
+
+/* ── ACTION PICKER ── */
+.action-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.action-opt {
+  padding: 14px 10px;
+  background: var(--s2);
+  border: 2px solid var(--border);
+  color: var(--muted);
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+  line-height: 1.5;
+}
+
+.action-opt:hover { border-color: var(--a); color: var(--text); }
+.action-opt.sel   { border-color: var(--a); background: rgba(255,140,0,0.1); color: var(--a); }
+.action-opt .ico  { font-size: 20px; display: block; margin-bottom: 6px; }
+
+/* ── NIGHT CODE DISPLAY ── */
+.night-code-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+}
+
+.night-code-val {
+  font-family: 'Russo One', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0.2em;
+  color: var(--a);
+}
+
+.night-code-label {
+  font-family: 'Fira Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ── CLICKER (Admin inventory) ── */
+.click-bar-section { margin-bottom: 28px; }
+
+.click-bar-name {
+  font-family: 'Russo One', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  padding: 10px 0 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+  color: var(--a);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.click-station {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+
+.click-station-head {
+  display: flex;
+  align-items: center;
+  padding: 9px 14px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+
+.click-station-name {
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.click-item-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px 100px;
+  align-items: center;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.click-item-row:last-child { border-bottom: none; }
+
+.click-item-name { font-size: 14px; font-weight: 500; }
+.click-placed {
+  font-family: 'Fira Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.clicker {
+  display: flex;
+  align-items: center;
+}
+
+.ck-btn {
+  width: 32px; height: 32px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+.ck-btn:active { background: var(--s3); }
+.ck-take { border-color: rgba(255,59,59,0.3); color: var(--a3); }
+.ck-take:active { background: rgba(255,59,59,0.1); }
+.ck-ret { border-color: rgba(0,212,170,0.3); color: var(--a2); }
+.ck-ret:active { background: rgba(0,212,170,0.1); }
+
+.ck-val {
+  min-width: 36px;
+  text-align: center;
+  font-family: 'Fira Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 0 4px;
+  transition: color 0.1s;
+}
+
+.ck-val.nonzero-take { color: var(--a3); }
+.ck-val.nonzero-ret  { color: var(--a2); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 400;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn 0.18s ease;
+  position: relative;
+}
+
+.modal::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--a);
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: none; } }
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+
+.modal-close:hover { color: var(--text); }
+
+.modal-body { padding: 20px; }
+
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 20px; right: 16px;
+  padding: 12px 18px;
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  z-index: 500;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.2s;
+  pointer-events: none;
+  max-width: 320px;
+}
+
+#toast.show { opacity: 1; transform: none; }
+#toast.t-ok   { background: var(--a2); color: #000; }
+#toast.t-err  { background: var(--a3); color: #fff; }
+#toast.t-info { background: var(--s3); border: 1px solid var(--border2); color: var(--text); }
+#toast.t-warn { background: var(--a);  color: #000; }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.3; }
+.empty-text {
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── FILTER BAR ── */
+.fbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fbar select, .fbar input {
+  padding: 8px 12px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Fira Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  min-width: 130px;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+}
+
+/* ── LIVE INDICATOR ── */
+.live-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.live-label {
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── OFFLINE QUEUE INDICATOR ── */
+.queue-badge {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255,140,0,0.1);
+  border: 1px solid rgba(255,140,0,0.25);
+  font-family: 'Fira Mono', monospace;
+  font-size: 10px;
+  color: var(--a);
+  letter-spacing: 0.1em;
+}
+
+.queue-badge.show { display: flex; }
+
+/* ── STAFF CHIP ── */
+.staff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.staff-chip .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+
+.sc-bartender .dot { background: var(--a); }
+.sc-barback .dot   { background: var(--a2); }
+
+/* ── SETUP GRID ── */
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .setup-grid { grid-template-columns: 1fr; }
+  .click-item-row { grid-template-columns: 1fr 60px 90px 90px; }
+}
+
+/* ── NIGHT CODE INPUT ── */
+.code-inputs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.code-digit {
+  flex: 1;
+  height: 56px;
+  text-align: center;
+  font-family: 'Russo One', sans-serif;
+  font-size: 24px;
+  background: var(--s2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.code-digit:focus { border-color: var(--a); }
+
+/* ── SCROLL SNAP for mobile tabs ── */
+@media (max-width: 480px) {
+  .topbar-nav { gap: 0; }
+  .nav-btn { padding: 0 12px; font-size: 9px; }
+}
+</style>
+</head>
+<body>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">⚡ Offline — Actions queued, will sync when connected</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SETUP WIZARD
+═══════════════════════════════════════════════════════ -->
+<div id="setup-wizard" style="display:none;">
+  <div class="wizard-box">
+    <div class="wizard-logo">BARINV</div>
+    <div class="wizard-tagline">First-time Setup</div>
+
+    <div class="wizard-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-title">Create a Supabase project</div>
+      <div class="step-desc">
+        Go to <a href="https://supabase.com" target="_blank">supabase.com</a> → New Project.
+        Then open <strong>SQL Editor</strong> and run the <code>schema.sql</code> file included in this ZIP.
+        Finally, go to <strong>Database → Replication</strong> and enable the <code>events</code> table for realtime.
+      </div>
+    </div>
+
+    <div class="wizard-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-title">Enter your project credentials</div>
+      <div class="step-desc">Find these in: Supabase Dashboard → Settings → API</div>
+      <div class="field">
+        <label>Project URL</label>
+        <input type="url" id="ws-url" placeholder="https://xxxx.supabase.co">
+      </div>
+      <div class="field">
+        <label>Anon / Public Key</label>
+        <input type="text" id="ws-key" placeholder="eyJ...">
+      </div>
+      <div id="ws-alert" class="alert alert-err"></div>
+    </div>
+
+    <button class="btn btn-a btn-full btn-lg" onclick="saveConfig()">
+      Test & Save →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════ -->
+<div id="login-screen" style="display:none;">
+  <div class="login-wrap">
+    <div class="login-logo">BARINV</div>
+    <div class="login-subtitle">Bar Inventory System</div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab('admin')">Admin Login</button>
+      <button class="login-tab" onclick="switchLoginTab('barback')">Night Code</button>
+    </div>
+
+    <!-- Admin -->
+    <div class="login-panel active" id="lp-admin">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="l-email" placeholder="admin@venue.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')doAdminLogin()">
+      </div>
+      <button class="btn btn-a btn-full" style="margin-top:4px;" onclick="doAdminLogin()">Sign In →</button>
+      <div id="login-err" class="alert alert-err"></div>
+      <div style="margin-top:16px; text-align:center;">
+        <a onclick="showCreateAdmin()" style="font-family:'Fira Mono',monospace; font-size:11px; color:var(--muted); cursor:pointer; letter-spacing:0.1em;">
+          First time? Create admin account
+        </a>
+      </div>
+    </div>
+
+    <!-- Barback night code -->
+    <div class="login-panel" id="lp-barback">
+      <div style="font-family:'Fira Mono',monospace; font-size:11px; color:var(--muted); margin-bottom:16px; letter-spacing:0.05em; line-height:1.6;">
+        Enter the 6-digit code your admin shared for tonight.
+      </div>
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="bb-name" placeholder="John">
+      </div>
+      <div class="field">
+        <label>Night Code</label>
+        <input type="text" id="bb-code" placeholder="000000"
+               maxlength="6" inputmode="numeric" pattern="[0-9]*"
+               style="font-family:'Russo One',sans-serif; font-size:28px; letter-spacing:0.25em; text-align:center;"
+               onkeydown="if(event.key==='Enter')doNightCodeLogin()">
+      </div>
+      <button class="btn btn-a btn-full" onclick="doNightCodeLogin()">Enter →</button>
+      <div id="bb-err" class="alert alert-err"></div>
+    </div>
+
+    <div style="margin-top:20px; text-align:center;">
+      <button onclick="resetConfig()" style="background:none;border:none;font-family:'Fira Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:0.1em;">
+        ⚙ Change Supabase Config
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP
+═══════════════════════════════════════════════════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">BARINV</div>
+    <nav class="topbar-nav" id="top-nav"></nav>
+    <div class="topbar-right">
+      <div class="queue-badge" id="queue-badge">
+        <span id="queue-count">0</span> queued
+      </div>
+      <div class="user-pill">
+        <span class="user-pill-name" id="user-disp">—</span>
+        <span class="role-chip" id="role-disp">—</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Out</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ══ DASHBOARD (admin) ══ -->
+    <div class="page" id="pg-dashboard">
+      <div class="ph">
+        <div class="ph-left">
+          <div class="ph-title">Dashboard</div>
+          <div class="ph-sub">
+            <span class="rt-dot"></span>Live updates
+          </div>
+        </div>
+        <div class="ph-actions">
+          <select id="dash-night" onchange="loadDashboard()" class="fbar" style="margin:0;">
+            <option value="">All Nights</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↺ Refresh</button>
+        </div>
+      </div>
+      <div class="stats" id="dash-stats"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Recent Events</div>
+          <div id="last-update" style="font-family:'Fira Mono',monospace;font-size:10px;color:var(--muted);"></div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Time</th><th>By</th><th>Action</th><th>Item</th><th>Bar</th><th>Qty</th><th>Status</th>
+            </tr></thead>
+            <tbody id="dash-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUBMIT (barback + admin) ══ -->
+    <div class="page" id="pg-submit">
+      <div class="ph">
+        <div class="ph-left">
+          <div class="ph-title">Submit Event</div>
+          <div class="ph-sub" id="submit-night-label">Select a night below</div>
+        </div>
+      </div>
+      <div class="submit-wrap">
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Location</div></div>
+          <div class="panel-body">
+            <div class="fg fg-2">
+              <div class="field">
+                <label>Night</label>
+                <select id="ev-night"></select>
+              </div>
+              <div class="field">
+                <label>Bar</label>
+                <select id="ev-bar" onchange="onBarChange()"></select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Station</label>
+              <select id="ev-station"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Item</div>
+            <button class="btn btn-ghost btn-sm" id="scan-btn" onclick="toggleScanner()">📷 Scan Barcode</button>
+          </div>
+          <div class="panel-body">
+            <div class="scanner-area" id="scanner-area">
+              <video id="scanner-video" autoplay playsinline muted></video>
+              <div class="scanner-hint" id="scanner-hint">Tap "Scan Barcode" to use camera, or search below</div>
+              <div class="sku-found" id="sku-found"></div>
+            </div>
+            <div class="field">
+              <label>Search / SKU</label>
+              <input type="text" id="ev-search" placeholder="Type item name or SKU..." oninput="filterItems()">
+            </div>
+            <div class="field">
+              <label>Select Item</label>
+              <select id="ev-item" onchange="onItemSelect()">
+                <option value="">— select —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Quantity</label>
+              <input type="number" id="ev-qty" value="1" min="0.5" step="0.5" style="max-width:120px;">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Action</div></div>
+          <div class="panel-body">
+            <div class="action-picker">
+              <div class="action-opt sel" id="ao-REQUEST" onclick="pickAction('REQUEST')">
+                <span class="ico">📋</span>Request
+              </div>
+              <div class="action-opt" id="ao-DELIVERED" onclick="pickAction('DELIVERED')">
+                <span class="ico">✅</span>Delivered
+              </div>
+              <div class="action-opt" id="ao-RETURNED" onclick="pickAction('RETURNED')">
+                <span class="ico">↩️</span>Returned
+              </div>
+            </div>
+            <div class="field">
+              <label>Notes (optional)</label>
+              <input type="text" id="ev-notes" placeholder="Any additional notes...">
+            </div>
+            <button class="btn btn-a btn-full btn-lg" onclick="submitEvent()" style="margin-top:8px;">
+              Submit →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ MY HISTORY (barback) ══ -->
+    <div class="page" id="pg-history">
+      <div class="ph">
+        <div class="ph-title">My History</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadHistory()">↺ Refresh</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Action</th><th>Item</th><th>Bar</th><th>Qty</th><th>Status</th></tr></thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ EVENTS (admin) ══ -->
+    <div class="page" id="pg-events">
+      <div class="ph">
+        <div class="ph-title">Events</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadEvents()">↺ Refresh</button>
+      </div>
+      <div class="fbar">
+        <select id="ef-night" onchange="loadEvents()"><option value="">All Nights</option></select>
+        <select id="ef-bar"   onchange="loadEvents()"><option value="">All Bars</option></select>
+        <select id="ef-status" onchange="loadEvents()">
+          <option value="">All Statuses</option>
+          <option>PENDING</option><option>APPROVED</option><option>REJECTED</option>
+        </select>
+        <select id="ef-action" onchange="loadEvents()">
+          <option value="">All Actions</option>
+          <option>REQUEST</option><option>DELIVERED</option><option>RETURNED</option><option>ADJUSTMENT</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>By</th><th>Action</th><th>Item</th><th>Bar / Station</th><th>Qty</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="events-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SETUP (admin) ══ -->
+    <div class="page" id="pg-setup">
+      <div class="ph">
+        <div class="ph-title">Setup</div>
+        <div class="ph-sub">Bars · Stations · Items · Staff</div>
+      </div>
+
+      <!-- Bars + Staff -->
+      <div class="setup-grid" style="margin-bottom:16px;">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Bars</div>
+            <button class="btn btn-a btn-sm" onclick="openAddBar()">+ Add</button>
+          </div>
+          <div id="bars-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Staff</div>
+            <button class="btn btn-a btn-sm" onclick="openAddStaff()">+ Add</button>
+          </div>
+          <div id="staff-list"></div>
+        </div>
+      </div>
+
+      <!-- Stations -->
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <div class="panel-title">Stations</div>
+          <button class="btn btn-a btn-sm" onclick="openAddStation()">+ Add</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Station</th><th>Bar</th><th>Status</th><th></th></tr></thead>
+            <tbody id="stations-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Items / Products</div>
+          <button class="btn btn-a btn-sm" onclick="openAddItem()">+ Add</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>SKU</th><th>Category</th><th>Unit</th><th>Status</th><th></th></tr></thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NIGHTS (admin) ══ -->
+    <div class="page" id="pg-nights">
+      <div class="ph">
+        <div class="ph-title">Nights</div>
+        <button class="btn btn-a btn-sm" onclick="openAddNight()">+ New Night</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Date</th><th>Room Code</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="nights-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ INVENTORY CLICKER (admin) ══ -->
+    <div class="page" id="pg-inventory">
+      <div class="ph">
+        <div class="ph-title">Inventory Clicker</div>
+        <div class="ph-actions">
+          <select id="inv-night" onchange="loadInventory()" style="padding:8px 12px; background:var(--s2); border:1px solid var(--border); color:var(--text); font-family:'Fira Mono',monospace; font-size:11px; outline:none; min-width:180px;">
+            <option value="">— Select Night —</option>
+          </select>
+        </div>
+      </div>
+      <div id="inv-content">
+        <div class="empty"><div class="empty-icon">🍸</div><div class="empty-text">Select a night to start tracking</div></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-a btn-sm" id="modal-ok" onclick="modalOK()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════
+// CONFIG & STATE
+// ══════════════════════════════════════════════════════
+const CFG_KEY = 'barinv_cfg';
+
+let SB = null; // Supabase client
+let SESSION = {
+  type: null,        // 'admin' | 'barback'
+  user: null,        // supabase auth user (admin) or {name, nightId, nightName, nightCode} (barback)
+  role: null,
+  selectedAction: 'REQUEST',
+  scannerActive: false,
+  scannerStream: null,
+  scannerInterval: null,
+  modalCb: null,
+  cache: { bars:[], stations:[], items:[], staff:[], nights:[], placements:[] }
+};
+
+let OFFLINE_QUEUE = []; // fallback in-memory queue
+let _toastTimer;
+
+// ══════════════════════════════════════════════════════
+// INDEXED DB OFFLINE QUEUE
+// ══════════════════════════════════════════════════════
+let IDB = null;
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('barinv_queue', 1);
+    req.onupgradeneeded = e => {
+      e.target.result.createObjectStore('queue', { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = e => { IDB = e.target.result; resolve(); };
+    req.onerror = () => { console.warn('IDB unavailable, using in-memory queue'); resolve(); };
+  });
+}
+
+async function queuePush(record) {
+  if (!IDB) { OFFLINE_QUEUE.push(record); updateQueueBadge(OFFLINE_QUEUE.length); return; }
+  await new Promise((res, rej) => {
+    const tx = IDB.transaction('queue', 'readwrite');
+    tx.objectStore('queue').add(record).onsuccess = res;
+    tx.onerror = rej;
+  });
+  const count = await queueCount();
+  updateQueueBadge(count);
+}
+
+async function queueAll() {
+  if (!IDB) return [...OFFLINE_QUEUE];
+  return new Promise((res, rej) => {
+    const req = IDB.transaction('queue').objectStore('queue').getAll();
+    req.onsuccess = () => res(req.result || []);
+    req.onerror = rej;
+  });
+}
+
+async function queueDelete(id) {
+  if (!IDB) { OFFLINE_QUEUE = OFFLINE_QUEUE.filter((_, i) => i !== id); return; }
+  await new Promise((res, rej) => {
+    const tx = IDB.transaction('queue', 'readwrite');
+    tx.objectStore('queue').delete(id).onsuccess = res;
+    tx.onerror = rej;
+  });
+}
+
+async function queueCount() {
+  if (!IDB) return OFFLINE_QUEUE.length;
+  return new Promise((res, rej) => {
+    const req = IDB.transaction('queue').objectStore('queue').count();
+    req.onsuccess = () => res(req.result);
+    req.onerror = rej;
+  });
+}
+
+function updateQueueBadge(count) {
+  const el = document.getElementById('queue-badge');
+  const cnt = document.getElementById('queue-count');
+  if (el && cnt) {
+    cnt.textContent = count;
+    el.classList.toggle('show', count > 0);
+  }
+}
+
+async function flushQueue() {
+  if (!SB) return;
+  const items = await queueAll();
+  if (!items.length) return;
+  toast(`Syncing ${items.length} queued event(s)…`, 't-warn');
+  let synced = 0;
+  for (const item of items) {
+    try {
+      const { error } = await SB.from('events').insert(item.data);
+      if (!error) {
+        await queueDelete(item.id);
+        synced++;
+      }
+    } catch {}
+  }
+  if (synced > 0) {
+    toast(`${synced} event(s) synced`, 't-ok');
+    updateQueueBadge(await queueCount());
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ONLINE / OFFLINE HANDLING
+// ══════════════════════════════════════════════════════
+function setupNetworkListeners() {
+  const banner = document.getElementById('offline-banner');
+  const update = () => {
+    const offline = !navigator.onLine;
+    banner.classList.toggle('show', offline);
+    if (!offline) flushQueue();
+  };
+  window.addEventListener('online', update);
+  window.addEventListener('offline', update);
+  update();
+}
+
+// ══════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════
+function toast(msg, type = 't-info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+// ══════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════
+function openModal(title, bodyHTML, okCb, footHTML) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHTML;
+  const foot = document.getElementById('modal-foot');
+  if (footHTML !== undefined) {
+    foot.innerHTML = footHTML;
+  } else {
+    foot.innerHTML = `
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-a btn-sm" onclick="modalOK()">Save</button>
+    `;
+  }
+  SESSION.modalCb = okCb;
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.querySelector('#modal input, #modal select')?.focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  SESSION.modalCb = null;
+}
+
+function modalOK() {
+  if (SESSION.modalCb) SESSION.modalCb();
+}
+
+// ══════════════════════════════════════════════════════
+// SETUP WIZARD
+// ══════════════════════════════════════════════════════
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); } catch { return null; }
+}
+
+function initSupabase(url, key) {
+  try {
+    SB = supabase.createClient(url, key);
+    return true;
+  } catch { return false; }
+}
+
+async function saveConfig() {
+  const url = document.getElementById('ws-url').value.trim();
+  const key = document.getElementById('ws-key').value.trim();
+  const alertEl = document.getElementById('ws-alert');
+  alertEl.className = 'alert';
+
+  if (!url || !key) {
+    alertEl.textContent = 'Both fields are required.';
+    alertEl.className = 'alert alert-err show';
+    return;
+  }
+
+  if (!initSupabase(url, key)) {
+    alertEl.textContent = 'Invalid URL or key format.';
+    alertEl.className = 'alert alert-err show';
+    return;
+  }
+
+  // Test connection
+  alertEl.textContent = 'Testing connection…';
+  alertEl.className = 'alert alert-info show';
+
+  try {
+    const { error } = await SB.from('bars').select('id').limit(1);
+    if (error && error.code !== 'PGRST116') throw new Error(error.message);
+  } catch (e) {
+    alertEl.textContent = 'Connection failed: ' + e.message + '. Check your URL/key and that you ran schema.sql.';
+    alertEl.className = 'alert alert-err show';
+    return;
+  }
+
+  localStorage.setItem(CFG_KEY, JSON.stringify({ url, key }));
+  showLoginScreen();
+}
+
+function resetConfig() {
+  localStorage.removeItem(CFG_KEY);
+  location.reload();
+}
+
+// ══════════════════════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════════════════════
+function showSetupWizard() {
+  document.getElementById('setup-wizard').style.display = 'flex';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showLoginScreen() {
+  document.getElementById('setup-wizard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('setup-wizard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════════════
+// LOGIN TABS
+// ══════════════════════════════════════════════════════
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((el, i) => {
+    el.classList.toggle('active', (tab === 'admin' && i === 0) || (tab === 'barback' && i === 1));
+  });
+  document.getElementById('lp-admin').classList.toggle('active', tab === 'admin');
+  document.getElementById('lp-barback').classList.toggle('active', tab === 'barback');
+}
+
+// ══════════════════════════════════════════════════════
+// ADMIN AUTH
+// ══════════════════════════════════════════════════════
+async function doAdminLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.className = 'alert';
+
+  if (!email || !pass) {
+    errEl.textContent = 'Email and password required.';
+    errEl.className = 'alert alert-err show';
+    return;
+  }
+
+  try {
+    const { data, error } = await SB.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    SESSION.type = 'admin';
+    SESSION.user = data.user;
+    SESSION.role = 'admin';
+    await startApp();
+  } catch (e) {
+    errEl.textContent = e.message || 'Login failed';
+    errEl.className = 'alert alert-err show';
+  }
+}
+
+function showCreateAdmin() {
+  openModal('Create Admin Account',
+    `<div class="field"><label>Email</label><input type="email" id="ca-email" placeholder="admin@venue.com"></div>
+     <div class="field"><label>Password (min 6 chars)</label><input type="password" id="ca-pass" placeholder="••••••••"></div>
+     <div id="ca-alert" class="alert"></div>`,
+    async () => {
+      const email = document.getElementById('ca-email').value.trim();
+      const pass  = document.getElementById('ca-pass').value;
+      const alertEl = document.getElementById('ca-alert');
+
+      if (!email || !pass) {
+        alertEl.textContent = 'Both fields required.';
+        alertEl.className = 'alert alert-err show';
+        return;
+      }
+
+      const { data, error } = await SB.auth.signUp({ email, password: pass });
+      if (error) {
+        alertEl.textContent = error.message;
+        alertEl.className = 'alert alert-err show';
+        return;
+      }
+
+      alertEl.textContent = 'Account created! Check your email to confirm (or disable email confirmation in Supabase Auth settings for internal use).';
+      alertEl.className = 'alert alert-ok show';
+    }
+  );
+}
+
+// ══════════════════════════════════════════════════════
+// BARBACK / NIGHT CODE AUTH
+// ══════════════════════════════════════════════════════
+async function doNightCodeLogin() {
+  const name = document.getElementById('bb-name').value.trim();
+  const code = document.getElementById('bb-code').value.trim();
+  const errEl = document.getElementById('bb-err');
+  errEl.className = 'alert';
+
+  if (!name || !code) {
+    errEl.textContent = 'Name and code are required.';
+    errEl.className = 'alert alert-err show';
+    return;
+  }
+
+  if (!/^\d{6}$/.test(code)) {
+    errEl.textContent = 'Code must be exactly 6 digits.';
+    errEl.className = 'alert alert-err show';
+    return;
+  }
+
+  try {
+    const { data, error } = await SB.from('nights').select('*').eq('code', code).eq('active', true).single();
+    if (error || !data) throw new Error('Invalid or expired night code.');
+
+    SESSION.type = 'barback';
+    SESSION.role = 'barback';
+    SESSION.user = { name, nightId: data.id, nightName: data.name, nightCode: code, nightDate: data.date };
+    await startApp();
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.className = 'alert alert-err show';
+  }
+}
+
+function doLogout() {
+  if (SESSION.type === 'admin') SB.auth.signOut();
+  stopScanner();
+  SESSION = { ...SESSION, type: null, user: null, role: null, cache: { bars:[], stations:[], items:[], staff:[], nights:[], placements:[] } };
+  showLoginScreen();
+}
+
+// ══════════════════════════════════════════════════════
+// APP START
+// ══════════════════════════════════════════════════════
+async function startApp() {
+  showApp();
+  buildNav();
+  updateUserDisplay();
+  await preload();
+  setupRealtime();
+  if (SESSION.role === 'admin') {
+    navigateTo('dashboard');
+  } else {
+    navigateTo('submit');
+    // Pre-select barback's night
+    const nightSel = document.getElementById('ev-night');
+    if (nightSel) nightSel.value = SESSION.user.nightId;
+    document.getElementById('submit-night-label').textContent = SESSION.user.nightName + ' · ' + SESSION.user.nightDate;
+  }
+}
+
+function updateUserDisplay() {
+  const name = SESSION.type === 'admin'
+    ? (SESSION.user?.email?.split('@')[0] || 'Admin')
+    : SESSION.user?.name;
+  document.getElementById('user-disp').textContent = name;
+  const roleEl = document.getElementById('role-disp');
+  if (SESSION.role === 'admin') {
+    roleEl.textContent = 'Admin';
+    roleEl.className = 'role-chip role-admin';
+  } else {
+    roleEl.textContent = SESSION.user?.nightName || 'Barback';
+    roleEl.className = 'role-chip role-night';
+  }
+}
+
+function buildNav() {
+  const nav = document.getElementById('top-nav');
+  nav.innerHTML = '';
+  const pages = SESSION.role === 'admin'
+    ? [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'events',    label: 'Events' },
+        { id: 'inventory', label: 'Clicker' },
+        { id: 'submit',    label: 'Submit' },
+        { id: 'setup',     label: 'Setup' },
+        { id: 'nights',    label: 'Nights' },
+      ]
+    : [
+        { id: 'submit',  label: 'Submit' },
+        { id: 'history', label: 'My History' },
+      ];
+
+  pages.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn';
+    btn.textContent = p.label;
+    btn.id = 'nb-' + p.id;
+    btn.onclick = () => navigateTo(p.id);
+    nav.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+const PAGE_LOADERS = {
+  dashboard: loadDashboard,
+  events:    loadEvents,
+  submit:    loadSubmitPage,
+  history:   loadHistory,
+  setup:     loadSetup,
+  nights:    loadNights,
+  inventory: loadInventory,
+};
+
+function navigateTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const page = document.getElementById('pg-' + id);
+  if (page) page.classList.add('active');
+  const nb = document.getElementById('nb-' + id);
+  if (nb) nb.classList.add('active');
+
+  if (id !== 'submit') stopScanner();
+  if (PAGE_LOADERS[id]) PAGE_LOADERS[id]();
+}
+
+// ══════════════════════════════════════════════════════
+// PRELOAD CACHE
+// ══════════════════════════════════════════════════════
+async function preload() {
+  try {
+    const [bars, stations, items, staff, nights, placements] = await Promise.all([
+      SB.from('bars').select('*').order('name'),
+      SB.from('stations').select('*, bars(name)').order('name'),
+      SB.from('items').select('*').order('name'),
+      SB.from('staff').select('*').order('name'),
+      SB.from('nights').select('*').order('date', { ascending: false }),
+      SB.from('placements').select('*, items(*), stations(*, bars(*)), staff!placements_bartender_id_fkey(*), staff!placements_barback_id_fkey(*)'),
+    ]);
+    SESSION.cache.bars       = bars.data || [];
+    SESSION.cache.stations   = stations.data || [];
+    SESSION.cache.items      = items.data || [];
+    SESSION.cache.staff      = staff.data || [];
+    SESSION.cache.nights     = nights.data || [];
+    SESSION.cache.placements = placements.data || [];
+  } catch (e) {
+    console.warn('Preload error:', e);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// REALTIME
+// ══════════════════════════════════════════════════════
+function setupRealtime() {
+  if (SESSION.role !== 'admin') return;
+  SB.channel('events-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => {
+      const ev = payload.new;
+      prependEventToTable(ev, 'dash-tbody');
+      updateDashStats();
+      const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const el = document.getElementById('last-update');
+      if (el) el.textContent = 'Updated ' + ts;
+    })
+    .subscribe();
+}
+
+function prependEventToTable(ev, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = eventRow(ev);
+  tr.style.animation = 'fadeIn 0.3s ease';
+  tbody.insertBefore(tr, tbody.firstChild);
+  // Keep max 50 rows
+  while (tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+async function loadDashboard() {
+  const nightSel = document.getElementById('dash-night');
+  if (nightSel) {
+    const cur = nightSel.value;
+    nightSel.innerHTML = '<option value="">All Nights</option>' +
+      SESSION.cache.nights.map(n => `<option value="${n.id}" ${n.id === cur ? 'selected' : ''}>${n.name}</option>`).join('');
+    nightSel.value = cur;
+  }
+
+  try {
+    let q = SB.from('events').select('*, bars(name), stations(name), items(name, sku)').order('created_at', { ascending: false }).limit(60);
+    const nightId = document.getElementById('dash-night')?.value;
+    if (nightId) q = q.eq('night_id', nightId);
+    const { data: events } = await q;
+
+    // Stats
+    const total    = (events || []).length;
+    const pending  = (events || []).filter(e => e.status === 'PENDING').length;
+    const delivered= (events || []).filter(e => e.action === 'DELIVERED').length;
+    const returned = (events || []).filter(e => e.action === 'RETURNED').length;
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card sc-a"><div class="stat-val">${total}</div><div class="stat-lbl">Total Events</div></div>
+      <div class="stat-card sc-a4"><div class="stat-val">${pending}</div><div class="stat-lbl">Pending</div></div>
+      <div class="stat-card sc-a2"><div class="stat-val">${delivered}</div><div class="stat-lbl">Delivered</div></div>
+      <div class="stat-card sc-a3"><div class="stat-val">${returned}</div><div class="stat-lbl">Returned</div></div>
+    `;
+
+    const tbody = document.getElementById('dash-tbody');
+    if (!events?.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No events yet</div></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = events.map(e => `<tr>${eventRow(e)}</tr>`).join('');
+  } catch (e) {
+    toast('Dashboard error: ' + e.message, 't-err');
+  }
+}
+
+async function updateDashStats() {
+  // Re-run without full re-render
+  if (document.getElementById('pg-dashboard').classList.contains('active')) loadDashboard();
+}
+
+function eventRow(e) {
+  const time = new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const bar = e.bars?.name || e.bar_name || '—';
+  const item = e.items?.name || e.item_name || '—';
+  return `
+    <td style="font-family:'Fira Mono',monospace;font-size:11px;">${time}</td>
+    <td style="font-size:13px;">${e.submitted_by}</td>
+    <td><span class="action-badge act-${e.action}">${e.action}</span></td>
+    <td style="font-weight:500;">${item}</td>
+    <td>${bar}</td>
+    <td style="font-family:'Fira Mono',monospace;">${e.qty}</td>
+    <td><span class="badge b-${e.status.toLowerCase()}">${e.status}</span></td>
+  `;
+}
+
+// ══════════════════════════════════════════════════════
+// SUBMIT EVENT
+// ══════════════════════════════════════════════════════
+async function loadSubmitPage() {
+  await preload();
+
+  const { bars, stations, items, nights } = SESSION.cache;
+
+  // Night selector
+  const nightSel = document.getElementById('ev-night');
+  nightSel.innerHTML = '<option value="">— select night —</option>' +
+    nights.filter(n => n.active).map(n => `<option value="${n.id}">${n.name} (${n.date})</option>`).join('');
+
+  // Pre-select for barback
+  if (SESSION.role === 'barback' && SESSION.user.nightId) {
+    nightSel.value = SESSION.user.nightId;
+    nightSel.disabled = true;
+  }
+
+  // Bar selector
+  const barSel = document.getElementById('ev-bar');
+  barSel.innerHTML = '<option value="">— select bar —</option>' +
+    bars.filter(b => b.active).map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+
+  // Items
+  populateItemSelect();
+}
+
+function populateItemSelect(filter = '') {
+  const sel = document.getElementById('ev-item');
+  const items = SESSION.cache.items.filter(i => i.active);
+  const filtered = filter ? items.filter(i =>
+    i.name.toLowerCase().includes(filter.toLowerCase()) ||
+    (i.sku && i.sku.toLowerCase().includes(filter.toLowerCase()))
+  ) : items;
+
+  sel.innerHTML = '<option value="">— select item —</option>' +
+    filtered.map(i => `<option value="${i.id}" data-sku="${i.sku || ''}">${i.name}${i.sku ? ' · ' + i.sku : ''}</option>`).join('');
+}
+
+function filterItems() {
+  populateItemSelect(document.getElementById('ev-search').value);
+}
+
+function onBarChange() {
+  const barId = document.getElementById('ev-bar').value;
+  const stSel = document.getElementById('ev-station');
+  const stations = SESSION.cache.stations.filter(s => s.bar_id === barId && s.active);
+  stSel.innerHTML = '<option value="">— select station —</option>' +
+    stations.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function onItemSelect() {
+  const sel = document.getElementById('ev-item');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt?.dataset.sku) {
+    document.getElementById('ev-search').value = opt.dataset.sku;
+    showSkuFound(opt.text);
+  }
+}
+
+function showSkuFound(text) {
+  const el = document.getElementById('sku-found');
+  el.textContent = '✓ ' + text;
+  el.style.display = 'block';
+}
+
+function pickAction(action) {
+  SESSION.selectedAction = action;
+  ['REQUEST', 'DELIVERED', 'RETURNED'].forEach(a => {
+    document.getElementById('ao-' + a).classList.toggle('sel', a === action);
+  });
+}
+
+async function submitEvent() {
+  const nightId   = document.getElementById('ev-night').value || null;
+  const barId     = document.getElementById('ev-bar').value || null;
+  const stationId = document.getElementById('ev-station').value || null;
+  const itemId    = document.getElementById('ev-item').value || null;
+  const qty       = parseFloat(document.getElementById('ev-qty').value) || 1;
+  const notes     = document.getElementById('ev-notes').value.trim() || null;
+  const action    = SESSION.selectedAction;
+  const by        = SESSION.role === 'admin'
+    ? (SESSION.user?.email?.split('@')[0] || 'admin')
+    : SESSION.user.name;
+
+  if (!itemId) { toast('Select an item', 't-err'); return; }
+
+  const record = {
+    night_id: nightId, bar_id: barId, station_id: stationId,
+    item_id: itemId, qty, action, notes, submitted_by: by, status: 'PENDING'
+  };
+
+  if (!navigator.onLine) {
+    await queuePush({ data: record });
+    toast('Offline — event queued, will sync when online', 't-warn');
+  } else {
+    const { error } = await SB.from('events').insert(record);
+    if (error) { toast('Error: ' + error.message, 't-err'); return; }
+    toast(action + ' submitted!', 't-ok');
+  }
+
+  // Reset form
+  document.getElementById('ev-item').value = '';
+  document.getElementById('ev-search').value = '';
+  document.getElementById('ev-qty').value = '1';
+  document.getElementById('ev-notes').value = '';
+  document.getElementById('sku-found').style.display = 'none';
+  populateItemSelect();
+}
+
+// ══════════════════════════════════════════════════════
+// BARCODE SCANNER
+// ══════════════════════════════════════════════════════
+async function toggleScanner() {
+  if (SESSION.scannerActive) { stopScanner(); return; }
+  await startScanner();
+}
+
+async function startScanner() {
+  const area = document.getElementById('scanner-area');
+  const video = document.getElementById('scanner-video');
+  const hint = document.getElementById('scanner-hint');
+  const btn = document.getElementById('scan-btn');
+
+  // Check BarcodeDetector support
+  if (!('BarcodeDetector' in window)) {
+    toast('Barcode scanning not supported in this browser. Try Chrome on Android.', 't-info');
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    SESSION.scannerStream = stream;
+    SESSION.scannerActive = true;
+    video.srcObject = stream;
+    video.style.display = 'block';
+    area.classList.add('scanning');
+    hint.textContent = '🔍 Scanning for barcode…';
+    btn.textContent = '⏹ Stop Scanner';
+
+    const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code'] });
+
+    SESSION.scannerInterval = setInterval(async () => {
+      if (!SESSION.scannerActive) return;
+      try {
+        const barcodes = await detector.detect(video);
+        if (barcodes.length > 0) {
+          const code = barcodes[0].rawValue;
+          stopScanner();
+          handleScannedCode(code);
+        }
+      } catch {}
+    }, 300);
+
+  } catch (e) {
+    toast('Camera error: ' + e.message, 't-err');
+  }
+}
+
+function stopScanner() {
+  clearInterval(SESSION.scannerInterval);
+  if (SESSION.scannerStream) {
+    SESSION.scannerStream.getTracks().forEach(t => t.stop());
+    SESSION.scannerStream = null;
+  }
+  SESSION.scannerActive = false;
+
+  const video = document.getElementById('scanner-video');
+  const area = document.getElementById('scanner-area');
+  const hint = document.getElementById('scanner-hint');
+  const btn = document.getElementById('scan-btn');
+
+  if (video) { video.style.display = 'none'; video.srcObject = null; }
+  if (area) area.classList.remove('scanning');
+  if (hint) hint.textContent = 'Tap "Scan Barcode" to use camera, or search below';
+  if (btn) btn.textContent = '📷 Scan Barcode';
+}
+
+function handleScannedCode(code) {
+  const item = SESSION.cache.items.find(i => i.sku && i.sku.toLowerCase() === code.toLowerCase());
+  document.getElementById('ev-search').value = code;
+  if (item) {
+    document.getElementById('ev-item').value = item.id;
+    showSkuFound(item.name + ' (' + item.unit + ')');
+    toast('✓ Item found: ' + item.name, 't-ok');
+  } else {
+    populateItemSelect(code);
+    toast('SKU ' + code + ' not in catalog — searching…', 't-info');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// MY HISTORY (barback)
+// ══════════════════════════════════════════════════════
+async function loadHistory() {
+  const byName = SESSION.user?.name || '';
+  const { data: events, error } = await SB
+    .from('events')
+    .select('*, items(name), bars(name)')
+    .eq('submitted_by', byName)
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  const tbody = document.getElementById('history-tbody');
+  if (!events?.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No history yet</div></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = events.map(e => `
+    <tr>
+      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${new Date(e.created_at).toLocaleString()}</td>
+      <td><span class="action-badge act-${e.action}">${e.action}</span></td>
+      <td style="font-weight:500;">${e.items?.name || '—'}</td>
+      <td>${e.bars?.name || '—'}</td>
+      <td style="font-family:'Fira Mono',monospace;">${e.qty}</td>
+      <td><span class="badge b-${e.status.toLowerCase()}">${e.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// EVENTS (admin)
+// ══════════════════════════════════════════════════════
+async function loadEvents() {
+  // Populate filters
+  const { nights, bars } = SESSION.cache;
+  const nf = document.getElementById('ef-night');
+  const bf = document.getElementById('ef-bar');
+  const nv = nf.value, bv = bf.value;
+  nf.innerHTML = '<option value="">All Nights</option>' + nights.map(n => `<option value="${n.id}" ${n.id === nv ? 'selected' : ''}>${n.name}</option>`).join('');
+  bf.innerHTML = '<option value="">All Bars</option>' + bars.map(b => `<option value="${b.id}" ${b.id === bv ? 'selected' : ''}>${b.name}</option>`).join('');
+  nf.value = nv; bf.value = bv;
+
+  let q = SB.from('events').select('*, bars(name), stations(name), items(name, sku)').order('created_at', { ascending: false }).limit(200);
+  if (nf.value) q = q.eq('night_id', nf.value);
+  if (bf.value) q = q.eq('bar_id', bf.value);
+  const sv = document.getElementById('ef-status').value;
+  if (sv) q = q.eq('status', sv);
+  const av = document.getElementById('ef-action').value;
+  if (av) q = q.eq('action', av);
+
+  const { data: events, error } = await q;
+
+  const tbody = document.getElementById('events-tbody');
+  if (!events?.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No events</div></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = events.map(e => {
+    const time = new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(e.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return `<tr>
+      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${time}<br><span style="color:var(--muted)">${date}</span></td>
+      <td>${e.submitted_by}</td>
+      <td><span class="action-badge act-${e.action}">${e.action}</span></td>
+      <td style="font-weight:500;">${e.items?.name || '—'} ${e.items?.sku ? `<br><span style="font-family:'Fira Mono',monospace;font-size:10px;color:var(--muted)">${e.items.sku}</span>` : ''}</td>
+      <td>${e.bars?.name || '—'}<br><span style="font-size:11px;color:var(--muted)">${e.stations?.name || ''}</span></td>
+      <td style="font-family:'Fira Mono',monospace;">${e.qty}</td>
+      <td><span class="badge b-${e.status.toLowerCase()}">${e.status}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          ${e.status !== 'APPROVED' ? `<button class="btn btn-a2 btn-xs" onclick="setStatus('${e.id}','APPROVED')">✓</button>` : ''}
+          ${e.status !== 'REJECTED' ? `<button class="btn btn-danger btn-xs" onclick="setStatus('${e.id}','REJECTED')">✗</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function setStatus(id, status) {
+  const { error } = await SB.from('events').update({ status }).eq('id', id);
+  if (error) { toast(error.message, 't-err'); return; }
+  toast('Updated to ' + status, 't-ok');
+  loadEvents();
+}
+
+// ══════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════
+async function loadSetup() {
+  await preload();
+  renderBars();
+  renderStaff();
+  renderStations();
+  renderItems();
+}
+
+function renderBars() {
+  const el = document.getElementById('bars-list');
+  const { bars } = SESSION.cache;
+  if (!bars.length) { el.innerHTML = '<div style="padding:16px;"><div class="empty-text" style="font-size:10px;color:var(--muted);">No bars yet</div></div>'; return; }
+  el.innerHTML = bars.map(b => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);">
+      <span style="font-weight:600;">${b.name} <span class="badge ${b.active ? 'b-active' : 'b-inactive'}">${b.active ? 'active' : 'off'}</span></span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-xs" onclick="editBar(${JSON.stringify(b).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteRow('bars','${b.id}',loadSetup)">×</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderStaff() {
+  const el = document.getElementById('staff-list');
+  const { staff } = SESSION.cache;
+  if (!staff.length) { el.innerHTML = '<div style="padding:16px;"><div class="empty-text" style="font-size:10px;color:var(--muted);">No staff yet</div></div>'; return; }
+  el.innerHTML = staff.map(s => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);">
+      <span>${s.name} <span class="badge ${s.role === 'bartender' ? '' : 'b-active'}" style="${s.role === 'bartender' ? 'background:rgba(255,140,0,0.12);color:var(--a)' : ''}">${s.role}</span></span>
+      <button class="btn btn-danger btn-xs" onclick="deleteRow('staff','${s.id}',loadSetup)">×</button>
+    </div>
+  `).join('');
+}
+
+function renderStations() {
+  const tbody = document.getElementById('stations-tbody');
+  const { stations } = SESSION.cache;
+  if (!stations.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty-text" style="padding:16px;font-size:10px;color:var(--muted);">No stations yet</div></td></tr>'; return; }
+  tbody.innerHTML = stations.map(s => `
+    <tr>
+      <td style="font-weight:600;">${s.name}</td>
+      <td>${s.bars?.name || '—'}</td>
+      <td><span class="badge ${s.active ? 'b-active' : 'b-inactive'}">${s.active ? 'Active' : 'Off'}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-xs" onclick="editStation(${JSON.stringify(s).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteRow('stations','${s.id}',loadSetup)">×</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderItems() {
+  const tbody = document.getElementById('items-tbody');
+  const { items } = SESSION.cache;
+  if (!items.length) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-text" style="padding:16px;font-size:10px;color:var(--muted);">No items yet</div></td></tr>'; return; }
+  tbody.innerHTML = items.map(i => `
+    <tr>
+      <td style="font-weight:600;">${i.name}</td>
+      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${i.sku || '—'}</td>
+      <td>${i.category || '—'}</td>
+      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${i.unit}</td>
+      <td><span class="badge ${i.active ? 'b-active' : 'b-inactive'}">${i.active ? 'Active' : 'Off'}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-xs" onclick="editItem(${JSON.stringify(i).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteRow('items','${i.id}',loadSetup)">×</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── ADD / EDIT MODALS ──
+
+function openAddBar() {
+  openModal('Add Bar',
+    `<div class="field"><label>Bar Name</label><input type="text" id="m-name" placeholder="Main Bar"></div>`,
+    async () => {
+      const name = document.getElementById('m-name').value.trim();
+      if (!name) { toast('Enter bar name', 't-err'); return; }
+      const { error } = await SB.from('bars').insert({ name });
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Bar added', 't-ok');
+    }
+  );
+}
+
+function editBar(bar) {
+  openModal('Edit Bar',
+    `<div class="field"><label>Name</label><input type="text" id="m-name" value="${bar.name}"></div>
+     <div class="field"><label>Status</label><select id="m-active"><option value="true" ${bar.active ? 'selected' : ''}>Active</option><option value="false" ${!bar.active ? 'selected' : ''}>Inactive</option></select></div>`,
+    async () => {
+      const name = document.getElementById('m-name').value.trim();
+      const active = document.getElementById('m-active').value === 'true';
+      const { error } = await SB.from('bars').update({ name, active }).eq('id', bar.id);
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Updated', 't-ok');
+    }
+  );
+}
+
+function openAddStaff() {
+  openModal('Add Staff',
+    `<div class="field"><label>Name</label><input type="text" id="m-name" placeholder="John"></div>
+     <div class="field"><label>Role</label><select id="m-role"><option value="bartender">Bartender</option><option value="barback">Barback</option></select></div>`,
+    async () => {
+      const name = document.getElementById('m-name').value.trim();
+      const role = document.getElementById('m-role').value;
+      if (!name) { toast('Enter name', 't-err'); return; }
+      const { error } = await SB.from('staff').insert({ name, role });
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Staff added', 't-ok');
+    }
+  );
+}
+
+function openAddStation() {
+  const bars = SESSION.cache.bars;
+  openModal('Add Station',
+    `<div class="field"><label>Bar</label>
+       <select id="m-bar">${bars.map(b => `<option value="${b.id}">${b.name}</option>`).join('')}</select></div>
+     <div class="field"><label>Station Name</label><input type="text" id="m-name" placeholder="Station 1"></div>`,
+    async () => {
+      const bar_id = document.getElementById('m-bar').value;
+      const name = document.getElementById('m-name').value.trim();
+      if (!name) { toast('Enter station name', 't-err'); return; }
+      const { error } = await SB.from('stations').insert({ bar_id, name });
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Station added', 't-ok');
+    }
+  );
+}
+
+function editStation(s) {
+  const bars = SESSION.cache.bars;
+  openModal('Edit Station',
+    `<div class="field"><label>Bar</label>
+       <select id="m-bar">${bars.map(b => `<option value="${b.id}" ${b.id === s.bar_id ? 'selected' : ''}>${b.name}</option>`).join('')}</select></div>
+     <div class="field"><label>Name</label><input type="text" id="m-name" value="${s.name}"></div>
+     <div class="field"><label>Status</label><select id="m-active"><option value="true" ${s.active ? 'selected' : ''}>Active</option><option value="false" ${!s.active ? 'selected' : ''}>Inactive</option></select></div>`,
+    async () => {
+      const bar_id = document.getElementById('m-bar').value;
+      const name = document.getElementById('m-name').value.trim();
+      const active = document.getElementById('m-active').value === 'true';
+      const { error } = await SB.from('stations').update({ bar_id, name, active }).eq('id', s.id);
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Updated', 't-ok');
+    }
+  );
+}
+
+function openAddItem() {
+  openModal('Add Item',
+    `<div class="fg fg-2">
+       <div class="field"><label>Name</label><input type="text" id="m-name" placeholder="Grey Goose Vodka"></div>
+       <div class="field"><label>SKU / Barcode</label><input type="text" id="m-sku" placeholder="5000299301001"></div>
+     </div>
+     <div class="fg fg-2">
+       <div class="field"><label>Category</label><input type="text" id="m-cat" placeholder="Spirits"></div>
+       <div class="field"><label>Unit</label>
+         <select id="m-unit"><option>bottle</option><option>can</option><option>keg</option><option>case</option><option>each</option></select>
+       </div>
+     </div>`,
+    async () => {
+      const name = document.getElementById('m-name').value.trim();
+      const sku  = document.getElementById('m-sku').value.trim() || null;
+      const category = document.getElementById('m-cat').value.trim() || null;
+      const unit = document.getElementById('m-unit').value;
+      if (!name) { toast('Enter item name', 't-err'); return; }
+      const { error } = await SB.from('items').insert({ name, sku, category, unit });
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Item added', 't-ok');
+    }
+  );
+}
+
+function editItem(i) {
+  openModal('Edit Item',
+    `<div class="fg fg-2">
+       <div class="field"><label>Name</label><input type="text" id="m-name" value="${i.name}"></div>
+       <div class="field"><label>SKU</label><input type="text" id="m-sku" value="${i.sku || ''}"></div>
+     </div>
+     <div class="fg fg-2">
+       <div class="field"><label>Category</label><input type="text" id="m-cat" value="${i.category || ''}"></div>
+       <div class="field"><label>Unit</label>
+         <select id="m-unit">${['bottle','can','keg','case','each'].map(u => `<option ${i.unit===u ? 'selected' : ''}>${u}</option>`).join('')}</select>
+       </div>
+     </div>
+     <div class="field"><label>Status</label>
+       <select id="m-active"><option value="true" ${i.active ? 'selected' : ''}>Active</option><option value="false" ${!i.active ? 'selected' : ''}>Inactive</option></select>
+     </div>`,
+    async () => {
+      const { error } = await SB.from('items').update({
+        name: document.getElementById('m-name').value.trim(),
+        sku: document.getElementById('m-sku').value.trim() || null,
+        category: document.getElementById('m-cat').value.trim() || null,
+        unit: document.getElementById('m-unit').value,
+        active: document.getElementById('m-active').value === 'true'
+      }).eq('id', i.id);
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadSetup(); toast('Updated', 't-ok');
+    }
+  );
+}
+
+async function deleteRow(table, id, reloadFn) {
+  if (!confirm('Delete this item?')) return;
+  const { error } = await SB.from(table).delete().eq('id', id);
+  if (error) { toast(error.message, 't-err'); return; }
+  await preload(); reloadFn(); toast('Deleted', 't-ok');
+}
+
+// ══════════════════════════════════════════════════════
+// NIGHTS
+// ══════════════════════════════════════════════════════
+async function loadNights() {
+  await preload();
+  const { nights } = SESSION.cache;
+  const tbody = document.getElementById('nights-tbody');
+  if (!nights.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">🌙</div><div class="empty-text">No nights yet</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = nights.map(n => `
+    <tr>
+      <td style="font-weight:700;">${n.name}</td>
+      <td style="font-family:'Fira Mono',monospace;">${n.date}</td>
+      <td>
+        <div class="night-code-display">
+          <div>
+            <div class="night-code-label">Room Code</div>
+            <div class="night-code-val">${n.code}</div>
+          </div>
+          <button class="btn btn-ghost btn-xs" onclick="copyCode('${n.code}')">Copy</button>
+        </div>
+      </td>
+      <td><span class="badge ${n.active ? 'b-active' : 'b-inactive'}">${n.active ? 'Active' : 'Closed'}</span></td>
+      <td>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-xs" onclick="toggleNight('${n.id}',${!n.active})">${n.active ? 'Close' : 'Reopen'}</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteRow('nights','${n.id}',loadNights)">×</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddNight() {
+  const code = (100000 + Math.floor(Math.random() * 900000)).toString();
+  openModal('New Night',
+    `<div class="field"><label>Night Name</label><input type="text" id="m-name" placeholder="Friday Night"></div>
+     <div class="field"><label>Date</label><input type="date" id="m-date" value="${new Date().toISOString().slice(0,10)}"></div>
+     <div class="field">
+       <label>Room Code (share with barback staff)</label>
+       <div style="display:flex;gap:8px;align-items:center;">
+         <input type="text" id="m-code" value="${code}" style="font-family:'Russo One',sans-serif;font-size:24px;letter-spacing:0.2em;max-width:160px;" readonly>
+         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('m-code').value=(100000+Math.floor(Math.random()*900000)).toString()">Regenerate</button>
+       </div>
+     </div>`,
+    async () => {
+      const name = document.getElementById('m-name').value.trim();
+      const date = document.getElementById('m-date').value;
+      const code = document.getElementById('m-code').value;
+      if (!name || !date) { toast('Name and date required', 't-err'); return; }
+      const { error } = await SB.from('nights').insert({ name, date, code });
+      if (error) { toast(error.message, 't-err'); return; }
+      closeModal(); await preload(); loadNights(); toast('Night created', 't-ok');
+    }
+  );
+}
+
+async function toggleNight(id, active) {
+  const { error } = await SB.from('nights').update({ active }).eq('id', id);
+  if (error) { toast(error.message, 't-err'); return; }
+  await preload(); loadNights(); toast(active ? 'Night reopened' : 'Night closed', 't-ok');
+}
+
+async function copyCode(code) {
+  try {
+    await navigator.clipboard.writeText(code);
+    toast('Code copied: ' + code, 't-ok');
+  } catch {
+    toast('Code: ' + code, 't-info');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INVENTORY CLICKER
+// ══════════════════════════════════════════════════════
+
+// Local clicker state (not persisted to DB — just session counts for tonight)
+let CLICK_STATE = {};
+
+async function loadInventory() {
+  const nightSel = document.getElementById('inv-night');
+  const cur = nightSel.value;
+  nightSel.innerHTML = '<option value="">— Select Night —</option>' +
+    SESSION.cache.nights.map(n => `<option value="${n.id}" ${n.id === cur ? 'selected' : ''}>${n.name} (${n.date})</option>`).join('');
+  nightSel.value = cur;
+
+  const nightId = nightSel.value;
+  const container = document.getElementById('inv-content');
+
+  if (!nightId) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🍸</div><div class="empty-text">Select a night to start tracking</div></div>';
+    return;
+  }
+
+  const { bars, stations, placements } = SESSION.cache;
+
+  let html = '';
+  bars.filter(b => b.active).forEach(bar => {
+    const barStations = stations.filter(s => s.bar_id === bar.id && s.active);
+    if (!barStations.length) return;
+
+    html += `<div class="click-bar-section"><div class="click-bar-name"><span style="color:var(--a);">▸</span> ${bar.name}</div>`;
+
+    barStations.forEach(st => {
+      const stPlacements = placements.filter(p => p.station_id === st.id);
+      if (!stPlacements.length) return;
+
+      const bt = stPlacements[0]?.['staff!placements_bartender_id_fkey'];
+      const bb = stPlacements[0]?.['staff!placements_barback_id_fkey'];
+
+      html += `<div class="click-station">
+        <div class="click-station-head">
+          <div class="click-station-name">${st.name}</div>
+          ${bt ? `<span class="staff-chip sc-bartender"><span class="dot"></span>${bt.name}</span>` : ''}
+          ${bb ? `<span class="staff-chip sc-barback"><span class="dot"></span>${bb.name}</span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 80px 100px 100px;padding:7px 14px;background:rgba(255,255,255,0.01);border-bottom:1px solid var(--border);">
+          <div style="font-family:'Fira Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;">Item</div>
+          <div style="font-family:'Fira Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;text-align:center;">Placed</div>
+          <div style="font-family:'Fira Mono',monospace;font-size:9px;color:var(--a3);letter-spacing:0.15em;text-transform:uppercase;text-align:center;">Taken</div>
+          <div style="font-family:'Fira Mono',monospace;font-size:9px;color:var(--a2);letter-spacing:0.15em;text-transform:uppercase;text-align:center;">Returned</div>
+        </div>`;
+
+      stPlacements.forEach(p => {
+        const item = p.items;
+        const key = nightId + '_' + p.id;
+        if (!CLICK_STATE[key]) CLICK_STATE[key] = { taken: 0, returned: 0 };
+
+        html += `<div class="click-item-row">
+          <div>
+            <div class="click-item-name">${item?.name || '?'}</div>
+            ${item?.category ? `<div style="font-size:11px;color:var(--muted);">${item.category}</div>` : ''}
+          </div>
+          <div class="click-placed">${p.qty}</div>
+          <div class="clicker">
+            <button class="ck-btn ck-take" ontouchstart="" onclick="click_adj('${key}','taken',-1)">−</button>
+            <div class="ck-val" id="cv-taken-${key}">${CLICK_STATE[key].taken}</div>
+            <button class="ck-btn ck-take" ontouchstart="" onclick="click_adj('${key}','taken',1)">+</button>
+          </div>
+          <div class="clicker">
+            <button class="ck-btn ck-ret" ontouchstart="" onclick="click_adj('${key}','returned',-1)">−</button>
+            <div class="ck-val" id="cv-returned-${key}">${CLICK_STATE[key].returned}</div>
+            <button class="ck-btn ck-ret" ontouchstart="" onclick="click_adj('${key}','returned',1)">+</button>
+          </div>
+        </div>`;
+      });
+
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  container.innerHTML = html || '<div class="empty"><div class="empty-icon">⚙</div><div class="empty-text">No placements set up — add items in Setup</div></div>';
+}
+
+function click_adj(key, field, delta) {
+  if (!CLICK_STATE[key]) CLICK_STATE[key] = { taken: 0, returned: 0 };
+  CLICK_STATE[key][field] = Math.max(0, (CLICK_STATE[key][field] || 0) + delta);
+  const el = document.getElementById(`cv-${field}-${key}`);
+  if (el) {
+    el.textContent = CLICK_STATE[key][field];
+    el.className = 'ck-val' + (CLICK_STATE[key][field] > 0 ? ` nonzero-${field === 'taken' ? 'take' : 'ret'}` : '');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+async function init() {
+  await openIDB();
+  setupNetworkListeners();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  const cfg = getConfig();
+  if (!cfg) { showSetupWizard(); return; }
+
+  if (!initSupabase(cfg.url, cfg.key)) { showSetupWizard(); return; }
+
+  // Check if already logged in (admin)
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) {
+    SESSION.type = 'admin';
+    SESSION.user = session.user;
+    SESSION.role = 'admin';
+    await startApp();
+    return;
+  }
+
+  showLoginScreen();
+}
+
+init();
+</script>
+</body>
+</html>
