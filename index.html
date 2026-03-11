@@ -1366,21 +1366,6 @@ tr:hover td { background: rgba(255,255,255,0.015); }
           </table>
         </div>
       </div>
-
-      <!-- Placements -->
-      <div class="panel" style="margin-top:16px;">
-        <div class="panel-head">
-          <div class="panel-title">Placements</div>
-          <div style="font-family:'Fira Mono',monospace;font-size:10px;color:var(--muted);flex:1;margin-left:12px;">Links items → stations for the Clicker</div>
-          <button class="btn btn-a btn-sm" onclick="openAddPlacement()">+ Add</button>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr><th>Item</th><th>Station / Bar</th><th>Qty Placed</th><th>Bartender</th><th>Barback</th><th></th></tr></thead>
-            <tbody id="placements-tbody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
     <!-- ══ NIGHTS (admin) ══ -->
@@ -1460,12 +1445,6 @@ let SESSION = {
 
 let OFFLINE_QUEUE = []; // fallback in-memory queue
 let _toastTimer;
-
-// ── HTML escape helper (prevents XSS from user-supplied data) ──
-function esc(str) {
-  if (str == null) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
 
 // ══════════════════════════════════════════════════════
 // INDEXED DB OFFLINE QUEUE
@@ -1908,13 +1887,26 @@ async function preload() {
 function setupRealtime() {
   if (SESSION.role !== 'admin') return;
   SB.channel('events-live')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, () => {
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => {
+      const ev = payload.new;
+      prependEventToTable(ev, 'dash-tbody');
+      updateDashStats();
       const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       const el = document.getElementById('last-update');
       if (el) el.textContent = 'Updated ' + ts;
-      if (document.getElementById('pg-dashboard').classList.contains('active')) loadDashboard();
     })
     .subscribe();
+}
+
+function prependEventToTable(ev, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = eventRow(ev);
+  tr.style.animation = 'fadeIn 0.3s ease';
+  tbody.insertBefore(tr, tbody.firstChild);
+  // Keep max 50 rows
+  while (tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1959,18 +1951,23 @@ async function loadDashboard() {
   }
 }
 
+async function updateDashStats() {
+  // Re-run without full re-render
+  if (document.getElementById('pg-dashboard').classList.contains('active')) loadDashboard();
+}
+
 function eventRow(e) {
   const time = new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const bar = esc(e.bars?.name || e.bar_name || '—');
-  const item = esc(e.items?.name || e.item_name || '—');
+  const bar = e.bars?.name || e.bar_name || '—';
+  const item = e.items?.name || e.item_name || '—';
   return `
     <td style="font-family:'Fira Mono',monospace;font-size:11px;">${time}</td>
-    <td style="font-size:13px;">${esc(e.submitted_by)}</td>
-    <td><span class="action-badge act-${e.action}">${esc(e.action)}</span></td>
+    <td style="font-size:13px;">${e.submitted_by}</td>
+    <td><span class="action-badge act-${e.action}">${e.action}</span></td>
     <td style="font-weight:500;">${item}</td>
     <td>${bar}</td>
     <td style="font-family:'Fira Mono',monospace;">${e.qty}</td>
-    <td><span class="badge b-${e.status.toLowerCase()}">${esc(e.status)}</span></td>
+    <td><span class="badge b-${e.status.toLowerCase()}">${e.status}</span></td>
   `;
 }
 
@@ -2166,9 +2163,9 @@ async function startScanner() {
 
 function stopScanner() {
   if (QR_SCANNER) {
-    const _qs = QR_SCANNER;
+    QR_SCANNER.stop().catch(() => {});
+    QR_SCANNER.clear();
     QR_SCANNER = null;
-    _qs.stop().then(() => { try { _qs.clear(); } catch {} }).catch(() => { try { _qs.clear(); } catch {} });
   }
   SESSION.scannerActive = false;
 
@@ -2292,7 +2289,6 @@ async function loadSetup() {
   renderStaff();
   renderStations();
   renderItems();
-  renderPlacements();
 }
 
 function renderBars() {
@@ -2301,7 +2297,7 @@ function renderBars() {
   if (!bars.length) { el.innerHTML = '<div style="padding:16px;"><div class="empty-text" style="font-size:10px;color:var(--muted);">No bars yet</div></div>'; return; }
   el.innerHTML = bars.map(b => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);">
-      <span style="font-weight:600;">${esc(b.name)} <span class="badge ${b.active ? 'b-active' : 'b-inactive'}">${b.active ? 'active' : 'off'}</span></span>
+      <span style="font-weight:600;">${b.name} <span class="badge ${b.active ? 'b-active' : 'b-inactive'}">${b.active ? 'active' : 'off'}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-ghost btn-xs" onclick="editBar(${JSON.stringify(b).replace(/"/g,'&quot;')})">Edit</button>
         <button class="btn btn-danger btn-xs" onclick="deleteRow('bars','${b.id}',loadSetup)">×</button>
@@ -2316,7 +2312,7 @@ function renderStaff() {
   if (!staff.length) { el.innerHTML = '<div style="padding:16px;"><div class="empty-text" style="font-size:10px;color:var(--muted);">No staff yet</div></div>'; return; }
   el.innerHTML = staff.map(s => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);">
-      <span>${esc(s.name)} <span class="badge ${s.role === 'bartender' ? '' : 'b-active'}" style="${s.role === 'bartender' ? 'background:rgba(255,140,0,0.12);color:var(--a)' : ''}">${esc(s.role)}</span></span>
+      <span>${s.name} <span class="badge ${s.role === 'bartender' ? '' : 'b-active'}" style="${s.role === 'bartender' ? 'background:rgba(255,140,0,0.12);color:var(--a)' : ''}">${s.role}</span></span>
       <button class="btn btn-danger btn-xs" onclick="deleteRow('staff','${s.id}',loadSetup)">×</button>
     </div>
   `).join('');
@@ -2328,8 +2324,8 @@ function renderStations() {
   if (!stations.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty-text" style="padding:16px;font-size:10px;color:var(--muted);">No stations yet</div></td></tr>'; return; }
   tbody.innerHTML = stations.map(s => `
     <tr>
-      <td style="font-weight:600;">${esc(s.name)}</td>
-      <td>${esc(s.bars?.name) || '—'}</td>
+      <td style="font-weight:600;">${s.name}</td>
+      <td>${s.bars?.name || '—'}</td>
       <td><span class="badge ${s.active ? 'b-active' : 'b-inactive'}">${s.active ? 'Active' : 'Off'}</span></td>
       <td>
         <div style="display:flex;gap:6px;">
@@ -2347,10 +2343,10 @@ function renderItems() {
   if (!items.length) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-text" style="padding:16px;font-size:10px;color:var(--muted);">No items yet</div></td></tr>'; return; }
   tbody.innerHTML = items.map(i => `
     <tr>
-      <td style="font-weight:600;">${esc(i.name)}</td>
-      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${esc(i.sku) || '—'}</td>
-      <td>${esc(i.category) || '—'}</td>
-      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${esc(i.unit)}</td>
+      <td style="font-weight:600;">${i.name}</td>
+      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${i.sku || '—'}</td>
+      <td>${i.category || '—'}</td>
+      <td style="font-family:'Fira Mono',monospace;font-size:11px;">${i.unit}</td>
       <td><span class="badge ${i.active ? 'b-active' : 'b-inactive'}">${i.active ? 'Active' : 'Off'}</span></td>
       <td>
         <div style="display:flex;gap:6px;">
@@ -2360,89 +2356,6 @@ function renderItems() {
       </td>
     </tr>
   `).join('');
-}
-
-function renderPlacements() {
-  const tbody = document.getElementById('placements-tbody');
-  const { placements } = SESSION.cache;
-  if (!placements.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-text" style="padding:16px;font-size:10px;color:var(--muted);">No placements yet — add items to stations here</div></td></tr>';
-    return;
-  }
-  tbody.innerHTML = placements.map(p => {
-    const bt = p['staff!placements_bartender_id_fkey'];
-    const bb = p['staff!placements_barback_id_fkey'];
-    return `<tr>
-      <td style="font-weight:600;">${esc(p.items?.name || '—')}</td>
-      <td>${esc(p.stations?.name || '—')}<br><span style="font-size:11px;color:var(--muted);">${esc(p.stations?.bars?.name || '')}</span></td>
-      <td style="font-family:'Fira Mono',monospace;">${p.qty}</td>
-      <td>${bt ? esc(bt.name) : '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${bb ? esc(bb.name) : '<span style="color:var(--muted)">—</span>'}</td>
-      <td>
-        <button class="btn btn-danger btn-xs" onclick="deleteRow('placements','${p.id}',loadSetup)">×</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function openAddPlacement() {
-  const { bars, stations, items, staff } = SESSION.cache;
-  const bartenders = staff.filter(s => s.role === 'bartender');
-  const barbacks   = staff.filter(s => s.role === 'barback');
-  const activeItems = items.filter(i => i.active);
-
-  openModal('Add Placement',
-    `<div class="fg fg-2">
-       <div class="field"><label>Item</label>
-         <select id="m-item">${activeItems.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('')}</select>
-       </div>
-       <div class="field"><label>Qty Placed</label>
-         <input type="number" id="m-qty" value="1" min="0.5" step="0.5">
-       </div>
-     </div>
-     <div class="fg fg-2">
-       <div class="field"><label>Bar</label>
-         <select id="m-bar" onchange="
-           var barId=this.value;
-           var sts=${JSON.stringify(stations.filter(s=>s.active).map(s=>({id:s.id,name:s.name,bar_id:s.bar_id})))};
-           var sel=document.getElementById('m-station');
-           sel.innerHTML='<option value=\\'\\'>— select —</option>'+sts.filter(s=>String(s.bar_id)===String(barId)).map(s=>'<option value=\\''+s.id+'\\'>'+s.name+'</option>').join('');
-         ">
-           <option value="">— select bar —</option>
-           ${bars.filter(b=>b.active).map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-         </select>
-       </div>
-       <div class="field"><label>Station</label>
-         <select id="m-station"><option value="">— select bar first —</option></select>
-       </div>
-     </div>
-     <div class="fg fg-2">
-       <div class="field"><label>Bartender (optional)</label>
-         <select id="m-bartender">
-           <option value="">— none —</option>
-           ${bartenders.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}
-         </select>
-       </div>
-       <div class="field"><label>Barback (optional)</label>
-         <select id="m-barback">
-           <option value="">— none —</option>
-           ${barbacks.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}
-         </select>
-       </div>
-     </div>`,
-    async () => {
-      const item_id    = document.getElementById('m-item').value;
-      const station_id = document.getElementById('m-station').value;
-      const qty        = parseFloat(document.getElementById('m-qty').value) || 1;
-      const bartender_id = document.getElementById('m-bartender').value || null;
-      const barback_id   = document.getElementById('m-barback').value || null;
-      if (!item_id)    { toast('Select an item', 't-err'); return; }
-      if (!station_id) { toast('Select a station', 't-err'); return; }
-      const { error } = await SB.from('placements').insert({ item_id, station_id, qty, bartender_id, barback_id });
-      if (error) { toast(error.message, 't-err'); return; }
-      closeModal(); await preload(); loadSetup(); toast('Placement added', 't-ok');
-    }
-  );
 }
 
 // ── ADD / EDIT MODALS ──
