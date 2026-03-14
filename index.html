@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Inventory Clicker V7 Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="offlineBanner" class="offline-banner hidden">Offline mode — actions saved locally.</div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">Inventory Clicker</div>
+      <div class="brand-sub" id="nightBadge">No active night</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn ghost" id="btnQuickOverview">Overview</button>
+      <button class="btn ghost" id="btnOpenSettings">Settings</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-page="setupPage">Setup</button>
+    <button class="tab" data-page="inventoryPage">Inventory</button>
+    <button class="tab" data-page="reportsPage">Reports</button>
+  </nav>
+
+  <main class="app-shell">
+    <section id="setupPage" class="page active">
+      <div class="card">
+        <h2>Night Setup</h2>
+        <div class="grid two">
+          <label>
+            <span>Night label</span>
+            <input id="nightLabel" type="text" placeholder="Friday Main Event" />
+          </label>
+          <label>
+            <span>Date</span>
+            <input id="nightDate" type="date" />
+          </label>
+        </div>
+
+        <div class="grid two">
+          <label>
+            <span>Bar</span>
+            <select id="barSelect"></select>
+          </label>
+          <label>
+            <span>Bartender</span>
+            <select id="bartenderSelect"></select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnStartNight">Start / Continue Night</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Master Data</h2>
+        <p class="muted">Edit bar names, bartender names, and item list. One value per line.</p>
+        <div class="grid three">
+          <label>
+            <span>Bars</span>
+            <textarea id="barsInput" rows="8"></textarea>
+          </label>
+          <label>
+            <span>Bartenders</span>
+            <textarea id="bartendersInput" rows="8"></textarea>
+          </label>
+          <label>
+            <span>Items</span>
+            <textarea id="itemsInput" rows="8"></textarea>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="btnSaveMasterData">Save Master Data</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="inventoryPage" class="page">
+      <div class="card compact">
+        <div class="grid four">
+          <label>
+            <span>Bar</span>
+            <select id="liveBarSelect"></select>
+          </label>
+          <label>
+            <span>Bartender</span>
+            <select id="liveBartenderSelect"></select>
+          </label>
+          <label>
+            <span>Search item</span>
+            <input id="itemSearch" type="text" placeholder="Type item name..." />
+          </label>
+          <label>
+            <span>Ticket code (optional)</span>
+            <input id="ticketCode" type="text" placeholder="SHOT-101 / COMP-5" />
+          </label>
+        </div>
+      </div>
+
+      <div class="card compact">
+        <div class="legend">
+          <span><b>TAKEN</b> = stock consumed</span>
+          <span><b>RETURN</b> = put back</span>
+          <span><b>COMP</b> = complimentary bottle/drink</span>
+          <span><b>SHOT</b> = free shot using ticket</span>
+        </div>
+      </div>
+
+      <div id="itemsContainer" class="items-grid"></div>
+    </section>
+
+    <section id="reportsPage" class="page">
+      <div class="card">
+        <h2>Google Sheet Reporting</h2>
+        <p class="muted">Reports stay inside the app for quick viewing, and the official share/export path is Google Sheets.</p>
+
+        <div class="stats" id="reportStats"></div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnSendToGoogle">Send Current Night to Google Sheet</button>
+          <button class="btn ghost" id="btnOpenGoogleSheet">Open Google Sheet</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Live summary</h3>
+        <div id="liveSummary"></div>
+      </div>
+
+      <div class="card">
+        <h2>Backup</h2>
+        <p class="muted">Backup is not a report. It is only for safety and restore.</p>
+        <div class="actions">
+          <button class="btn ghost" id="btnBackup">Download Backup</button>
+          <label class="btn ghost file-btn">
+            Restore Backup
+            <input id="restoreFile" type="file" accept=".json,application/json" hidden />
+          </label>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="overviewModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Quick Overview</h2>
+        <button class="btn ghost small" id="btnCloseOverview">Close</button>
+      </div>
+
+      <div class="grid two">
+        <div class="card inner">
+          <h3>All Bars</h3>
+          <div id="barsOverview"></div>
+        </div>
+
+        <div class="card inner">
+          <h3>Specific Bartender</h3>
+          <label>
+            <span>Select bartender</span>
+            <select id="overviewBartender"></select>
+          </label>
+          <div id="bartenderOverview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Settings</h2>
+        <button class="btn ghost small" id="btnCloseSettings">Close</button>
+      </div>
+
+      <div class="grid two">
+        <label>
+          <span>Google Apps Script Web App URL</span>
+          <input id="gsWebAppUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
+        </label>
+
+        <label>
+          <span>Google Sheet URL</span>
+          <input id="gsSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnSaveSettings">Save Settings</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <h3>Google Apps Script example payload</h3>
+      <pre class="code-block">{
+  spreadsheetId,
+  night,
+  rows: [...],
+  summary: {...},
+  barSummary: [...]
+}</pre>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
